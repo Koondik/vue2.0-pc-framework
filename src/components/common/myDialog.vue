@@ -1,6 +1,6 @@
 <template>
     <div class="myDialog">
-        <el-dialog :visible.sync="dialogFormVisible" custom-class="myDialogClass" top="25%" size="tiny" :show-close="false">
+        <el-dialog :visible.sync="dialogFormVisible" custom-class="myDialogClass" top="25%" :size="size" :show-close="false">
             <div slot="title" class="el-dialog__title">
                 {{title}}
                 <button type="button" class="el-dialog__headerbtn" @click="Close()"><i class="el-dialog__close el-icon el-icon-close"></i></button>
@@ -21,7 +21,17 @@
             return {
             }
         },
-        props:[ 'title','Visible' ],
+        props: {
+            title:{
+                required:true
+            },
+            Visible:{
+                required:true
+            },
+            size:{
+                default:'tiny'
+            }
+        },
         methods:{
             Close(){
                 this.$emit('closeDialog')

@@ -2,8 +2,11 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import basis from '../components/common/basis.vue'
 import place from '../components/page/place/place.vue'
+import period from '../components/page/period/period.vue'
 import booking from '../components/page/booking/booking.vue'
 import approve from '../components/page/approve/approve.vue'
+import statistic from '../components/page/statistic/statistic.vue'
+
 Vue.use(Router);
 
 export default new Router({
@@ -23,6 +26,11 @@ export default new Router({
                     component: place
                 },
                 {
+                    name : 'period',
+                    path: 'period',
+                    component: period
+                },
+                {
                     name : 'booking',
                     path: 'booking',
                     component: booking
@@ -31,6 +39,11 @@ export default new Router({
                     name : 'approve',
                     path: 'approve',
                     component: approve
+                },
+                {
+                    name : 'statistic',
+                    path: 'statistic',
+                    component: statistic
                 }
 
             ],

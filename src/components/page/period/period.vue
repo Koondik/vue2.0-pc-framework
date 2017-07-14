@@ -1,9 +1,9 @@
 <template>
-    <div class="place">
+    <div class="period">
         <div class="sub-header">
             <i class="iconfont icon-location"></i>
             <span>
-                所在位置:场地设置
+                所在位置:节次设置
             </span>
         </div>
         <div class="content-wrap">
@@ -24,9 +24,8 @@
             <div class="table-wrap">
                 <el-table :data="tableData" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                     <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="date" label="日期" width="180"></el-table-column>
-                    <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-                    <el-table-column prop="address" label="地址"></el-table-column>
+                    <el-table-column prop="name" label="排序" width="180"></el-table-column>
+                    <el-table-column prop="address" label="节次"></el-table-column>
                 </el-table>
             </div>
             <div class="pagination-wrap clearfix">
@@ -38,10 +37,10 @@
         </div>
         <my-dialog :Visible="dialog.Visible" :title="dialog.title" v-on:closeDialog="closeDialog">
             <el-form :model="form">
-                <el-form-item label="教室名称：" :label-width="formLabelWidth">
+                <el-form-item label="排序：" :label-width="formLabelWidth">
                     <el-input v-model="form.name" auto-complete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="座位数：" :label-width="formLabelWidth">
+                <el-form-item label="节次：" :label-width="formLabelWidth">
                     <el-input v-model="form.name" auto-complete="off"></el-input>
                 </el-form-item>
             </el-form>
@@ -54,30 +53,26 @@
     import pageHeader from '../../common/pageHeader.vue';
     import myDialog from '../../common/myDialog.vue'
     export default {
-        name : 'place',
+        name : 'period',
         data () {
             return {
                 pageHeader:{
-                    name:'场地设置',
+                    name:'节次信息',
                     addBtn:true,
                     delBtn:true,
                     importBtn:true,
                     exportBtn:true
                 },
                 tableData: [{
-                    date: '2016-05-02',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1518 弄'
                 }, {
-                    date: '2016-05-04',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1517 弄'
                 }, {
-                    date: '2016-05-01',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1519 弄'
                 }, {
-                    date: '2016-05-03',
                     name: '王小虎',
                     address: '上海市普陀区金沙江路 1516 弄'
                 }],
@@ -85,7 +80,7 @@
                 currentPage: 1,
                 dialog:{
                     Visible: false,
-                    title:'新增场地'
+                    title:'新增节次'
                 },
                 form: {
                     name: '',

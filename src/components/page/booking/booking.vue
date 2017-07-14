@@ -20,7 +20,7 @@
                 <el-tabs v-model="activeName" @tab-click="handleClick">
                     <el-tab-pane label="全部" name="first">
                         <el-checkbox-group v-model="checkList">
-                            <my-card></my-card>
+                            <my-card :hasBtn="myCard.hasBtn"></my-card>
                         </el-checkbox-group>
                     </el-tab-pane>
                     <el-tab-pane label="待审批" name="second">配置管理</el-tab-pane>
@@ -29,7 +29,7 @@
                 </el-tabs>
             </div>
         </div>
-        <my-dialog :Visible="dialogFormVisible" :title="'新增预约'" v-on:closeDialog="closeDialog">
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" v-on:closeDialog="closeDialog">
             <el-form :model="form">
                 <el-form-item label="教室名称：" :label-width="formLabelWidth">
                     <el-input v-model="form.name" auto-complete="off"></el-input>
@@ -70,8 +70,13 @@
                 },
                 activeName: 'first',  //初始化显示第一个分页
                 checkList: [],
-
-                dialogFormVisible: false,
+                dialog:{
+                    Visible: false,
+                    title:'新增预约'
+                },
+                myCard:{
+                    hasBtn:false
+                },
                 form: {
                     name: '',
                     region: '',
@@ -84,13 +89,13 @@
         methods:{
             add(){ //新增
                 console.log(111);
-                this.dialogFormVisible = true
+                this.dialog.Visible = true
             },
             del(){ //删除
                 console.log(222);
             },
             closeDialog(){
-                this.dialogFormVisible = false
+                this.dialog.Visible = false
             },
             handleClick(tab, event) {  //tabs点击方法
                 console.log(tab, event);
@@ -121,13 +126,6 @@
         left: 0;
         padding:0 15px;
     }
-
-
-    /*.box-card{*/
-        /*width:100%;*/
-        /*box-sizing: border-box;*/
-    /*}*/
-
     .el-input{
         width:280px;
         .el-button{

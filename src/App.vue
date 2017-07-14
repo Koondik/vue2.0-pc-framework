@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+      <transition appear appear-class="fade-enter" appear-to-class="fade-enter-to" appear-active-class="fade-enter-active">
+          <router-view ></router-view>
+      </transition>
   </div>
 </template>
 
@@ -43,6 +45,16 @@ a:hover{text-decoration:none;}
 .none{display:none}
 .left{float:left}
 .right{float:right}
+/*过渡样式*/
+.fade-enter-active, .fade-leave-active {
+    transition:.5s all ease;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+    opacity:0;
+}
+.fade-enter-to{
+    opacity:1;
+}
 .el-button--primary {
     color: #fff!important;
     background-color: #4e97d9!important;
@@ -210,5 +222,69 @@ a:hover{text-decoration:none;}
     background-color: #f68a8a;
     -webkit-transform: rotate(45deg);
     transform: rotate(35deg);
+}
+/*日历按钮样式*/
+.el-input__icon.el-icon-date{
+    width: 58px;
+    color: #fff;
+    background-color: #4e97d9;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+/*统计界面样式*/
+.statistic{
+    .el-checkbox.card{
+        cursor:default;
+    }
+    .el-checkbox__input{
+        display:none;
+    }
+     /*图表样式*/
+    .box-card {
+        margin:0 17px;
+        padding:10px 45px;
+        .title{
+            color:#4e97d9;
+            .el-input{
+                i{
+                    color:#4e97d9;
+                }
+                input::-webkit-input-placeholder{
+                    color:#4e97d9;
+                }
+            　　input:-moz-placeholder{
+                    color:#4e97d9;
+                }
+            　　input::-moz-placeholder{
+                    color:#4e97d9;
+                }
+            　　input:-ms-input-placeholder{
+                    color:#4e97d9;
+                }
+
+
+                input.el-input__inner{
+                    border: none;
+                    padding: 0;
+                    width: 72px;
+                    color: #4e97d9;
+                }
+
+            }
+
+        }
+        .title:after{
+            content:'';
+            display:block;
+            width:23px;
+            height:2px;
+            background-color:#4e97d9;
+        }
+    }
+    .el-card__header {
+        padding: 0;
+        line-height:40px;
+        border-bottom:0;
+    }
 }
 </style>

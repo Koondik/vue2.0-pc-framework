@@ -7,7 +7,7 @@
                     <router-link tag="li" to="/room/place" active-class="active">
                         <a><i class="iconfont icon-stu"></i> 场地设置</a>
                     </router-link>
-                    <router-link tag="li" to="/room/aaa" active-class="active">
+                    <router-link tag="li" to="/room/period" active-class="active">
                         <a><i class="iconfont icon-stu"></i> 节次设置</a>
                     </router-link>
                     <router-link tag="li" to="/room/booking" active-class="active">
@@ -16,13 +16,15 @@
                     <router-link tag="li" to="/room/approve" active-class="active">
                         <a><i class="iconfont icon-stu"></i> 预约审批</a>
                     </router-link>
-                    <router-link tag="li" to="/room/cccc" active-class="active">
+                    <router-link tag="li" to="/room/statistic" active-class="active">
                         <a><i class="iconfont icon-stu"></i> 预约统计</a>
                     </router-link>
                 </ul>
             </div>
             <div class="main-content clearfix">
-                <router-view></router-view>
+                <transition  name="fade">
+                    <router-view></router-view>
+                </transition>
             </div>
         </div>
     </div>
@@ -100,7 +102,16 @@
             position: absolute;
             right: 0;
             left: 200px;
+            > div{
+                  position:absolute;
+                  top:0;
+                  width:100%;
+                  min-height:100%;
+                  height:100%;
+             }
         }
     }
+
+
 }
 </style>

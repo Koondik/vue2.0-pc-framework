@@ -3,46 +3,39 @@
         <div class="sub-header">
             <i class="iconfont icon-location"></i>
             <span>
-                所在位置:场地预约
+                所在位置:预约审批
             </span>
         </div>
         <div class="content-wrap">
+            <div class="count-wrap">
+                <p>共：<span>3</span> 条</p>
+            </div>
             <page-header
                     :title="pageHeader.name"
                     :showAdd="pageHeader.addBtn"
                     :showDel="pageHeader.delBtn"
                     :showImport="pageHeader.importBtn"
                     :showExport="pageHeader.exportBtn"
-                    v-on:add="add"
-                    v-on:del="del"
             ></page-header>
             <div class="tabs-wrap">
-                <el-tabs v-model="activeName" @tab-click="handleClick">
-                    <el-tab-pane label="全部" name="first">
-                        <my-card :checkList="checkList"></my-card>
-                    </el-tab-pane>
-                    <el-tab-pane label="待审批" name="second">配置管理</el-tab-pane>
-                    <el-tab-pane label="已通过" name="third">角色管理</el-tab-pane>
-                    <el-tab-pane label="不通过" name="fourth">定时任务补偿</el-tab-pane>
-                </el-tabs>
+                <my-card :checkList="myCard.checkList" :hasBtn="myCard.hasBtn" v-on:unapprove="unapprove"></my-card>
             </div>
         </div>
-        <my-dialog :Visible="dialogFormVisible" :title="'新增预约'" v-on:closeDialog="closeDialog">
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog">
+            <el-form :inline="true" class="demo-form-inline">
+                <el-form-item label="申请人：" :label-width="formLabelWidth">何大大</el-form-item>
+                <el-form-item label="申请时间：" :label-width="formLabelWidth">2016-06-07</el-form-item>
+            </el-form>
+            <el-form :inline="true" class="demo-form-inline">
+                <el-form-item label="申请教室：" :label-width="formLabelWidth">何大大</el-form-item>
+                <el-form-item label="预约时间：" :label-width="formLabelWidth">2016-06-20 第5.6节</el-form-item>
+            </el-form>
+            <el-form :inline="true" class="demo-form-inline">
+                <el-form-item label="预约事由：" :label-width="formLabelWidth">教学交流</el-form-item>
+            </el-form>
             <el-form :model="form">
-                <el-form-item label="教室名称：" :label-width="formLabelWidth">
-                    <el-input v-model="form.name" auto-complete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="活动时间：" :label-width="formLabelWidth">
-                    <el-col :span="8">
-                        <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker>
-                    </el-col>
-                    <el-col class="line" style="text-align:center" :span="2">-</el-col>
-                    <el-col :span="8">
-                        <el-date-picker type="date" placeholder="选择日期" v-model="form.date2" style="width: 100%;"></el-date-picker>
-                    </el-col>
-                </el-form-item>
-                <el-form-item label="使用事由：" :label-width="formLabelWidth">
-                    <el-input v-model="form.name" auto-complete="off"></el-input>
+                <el-form-item label="活动形式：" :label-width="formLabelWidth">
+                    <el-input type="textarea" v-model="form.desc"></el-input>
                 </el-form-item>
             </el-form>
         </my-dialog>
@@ -59,35 +52,34 @@
         data () {
             return {
                 pageHeader:{
-                    name:'场地预约',
-                    addBtn:true,
-                    delBtn:true,
+                    name:'预约审批',
+                    addBtn:false,
+                    delBtn:false,
                     importBtn:false,
-                    exportBtn:true
+                    exportBtn:false
                 },
-                activeName: 'first',  //初始化显示第一个分页
-                checkList: ['复选框 A'],
+                myCard:{
+                    hasBtn:true,
 
-                dialogFormVisible: false,
+                    checkList: ['复选框 A']
+                },
+                dialog:{
+                    Visible: false,
+                    title:'不同意意见',
+                    size:'tiny'
+                },
                 form: {
-                    name: '',
-                    region: '',
-                    date1:'',
-                    date2:''
+                    desc:''
                 },
                 formLabelWidth: '165px'
             }
         },
         methods:{
-            add(){ //新增
-                console.log(111);
-                this.dialogFormVisible = true
-            },
-            del(){ //删除
-                console.log(222);
+            unapprove(){   //打开不同意编辑页面
+                this.dialog.Visible = true
             },
             closeDialog(){
-                this.dialogFormVisible = false
+                this.dialog.Visible = false
             },
             handleClick(tab, event) {  //tabs点击方法
                 console.log(tab, event);
@@ -118,20 +110,21 @@
         left: 0;
         padding:0 15px;
     }
-
-
-    /*.box-card{*/
-        /*width:100%;*/
-        /*box-sizing: border-box;*/
-    /*}*/
-
-    .el-input{
-        width:280px;
-        .el-button{
-            border-top: inherit;
-            border-bottom: inherit;
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+    .count-wrap{
+        position:absolute;
+        right: 18px;
+        top: 4px;
+        p{
+            font-size:14px;
+            color:#4e97d9;
+            span{
+                font-size:30px;
+                color:#f78b8b
+            }
         }
+    }
+    .el-textarea{
+        width:280px;
+
     }
 </style>
