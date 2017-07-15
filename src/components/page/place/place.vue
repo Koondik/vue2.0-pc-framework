@@ -24,9 +24,7 @@
             <div class="table-wrap">
                 <el-table :data="tableData" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                     <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="date" label="日期" width="180"></el-table-column>
-                    <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-                    <el-table-column prop="address" label="地址"></el-table-column>
+                    <el-table-column prop="periodName" label="日期"></el-table-column>
                 </el-table>
             </div>
             <div class="pagination-wrap clearfix">
@@ -50,9 +48,9 @@
 </template>
 
 <script>
-    import commonConfig from '../../../config/config';
     import pageHeader from '../../common/pageHeader.vue';
-    import myDialog from '../../common/myDialog.vue'
+    import myDialog from '../../common/myDialog.vue';
+    import Request from '../../../config/Request';
     export default {
         name : 'place',
         data () {
@@ -64,23 +62,7 @@
                     importBtn:true,
                     exportBtn:true
                 },
-                tableData: [{
-                    date: '2016-05-02',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-04',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1517 弄'
-                }, {
-                    date: '2016-05-01',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1519 弄'
-                }, {
-                    date: '2016-05-03',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1516 弄'
-                }],
+                tableData: null,
                 multipleSelection: [],
                 currentPage: 1,
                 dialog:{
@@ -94,9 +76,18 @@
                 formLabelWidth: '165px'
             }
         },
+        mounted(){
+//            const url = this.GLOBAL_Config.roomApi+'room/period?tenantId=1&pageNum=1&pageSize=10&orderBy=id%20asc';
+//            Request('GET',url).then(function(res){
+//                console.log(res);
+//                this.tableData = res.list;
+//            }.bind(this)).catch(function(err){
+//                console.log(err)
+//            });
+        },
         methods:{
             add(){ //新增
-               this.dialog.Visible = true
+                this.dialog.Visible = true
             },
             del(){ //删除
                 console.log(222);

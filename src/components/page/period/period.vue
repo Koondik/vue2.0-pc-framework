@@ -13,35 +13,35 @@
                     :showDel="pageHeader.delBtn"
                     :showImport="pageHeader.importBtn"
                     :showExport="pageHeader.exportBtn"
-                    v-on:add="add"
+                    v-on:add="openDialog"
                     v-on:del="del"
             ></page-header>
             <div class="search-wrap">
-                <el-input placeholder="查询">
-                    <el-button slot="append" type="primary" >查询</el-button>
+                <el-input placeholder="查询" v-model="searchKeyword">
+                    <el-button slot="append" type="primary" @click="getList">查询</el-button>
                 </el-input>
             </div>
             <div class="table-wrap">
                 <el-table :data="tableData" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                     <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="name" label="排序" width="180"></el-table-column>
-                    <el-table-column prop="address" label="节次"></el-table-column>
+                    <el-table-column prop="periodNo" label="排序" width="180"></el-table-column>
+                    <el-table-column prop="periodName" label="节次"></el-table-column>
                 </el-table>
             </div>
             <div class="pagination-wrap clearfix">
-                <div class="left">*显示第1条到第10条数据</div>
+                <div class="left">*显示第{{pagination.startRow}}条到第{{pagination.endRow}}条数据</div>
                 <div class="right">
-                    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10" layout="total, sizes, prev, pager, next, jumper" :total="156"></el-pagination>
+                    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :page-sizes="[5, 10, 15, 20]" layout="total, sizes, prev, pager, next, jumper" :current-page="pagination.currentPage"  :page-size="pagination.pageSize"  :total="pagination.total"></el-pagination>
                 </div>
             </div>
         </div>
-        <my-dialog :Visible="dialog.Visible" :title="dialog.title" v-on:closeDialog="closeDialog">
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog"  v-on:OK="add">
             <el-form :model="form">
                 <el-form-item label="排序：" :label-width="formLabelWidth">
-                    <el-input v-model="form.name" auto-complete="off"></el-input>
+                    <el-input v-model="form.periodNo" auto-complete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="节次：" :label-width="formLabelWidth">
-                    <el-input v-model="form.name" auto-complete="off"></el-input>
+                    <el-input v-model="form.periodName" auto-complete="off"></el-input>
                 </el-form-item>
             </el-form>
         </my-dialog>
@@ -49,9 +49,9 @@
 </template>
 
 <script>
-    import commonConfig from '../../../config/config';
     import pageHeader from '../../common/pageHeader.vue';
-    import myDialog from '../../common/myDialog.vue'
+    import myDialog from '../../common/myDialog.vue';
+    import Request from '../../../config/Request';
     export default {
         name : 'period',
         data () {
@@ -63,52 +63,125 @@
                     importBtn:true,
                     exportBtn:true
                 },
-                tableData: [{
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1517 弄'
-                }, {
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1519 弄'
-                }, {
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1516 弄'
-                }],
+                tableData: null,
                 multipleSelection: [],
-                currentPage: 1,
+                searchKeyword:'',
+                pagination:{
+                    currentPage: 1,
+                    pageSize:10,
+                    total:null,
+                    startRow:null,
+                    endRow:null
+                },
                 dialog:{
                     Visible: false,
-                    title:'新增节次'
+                    title:'新增节次',
+                    size:'tiny'
                 },
                 form: {
-                    name: '',
-                    region: ''
+                    id:0,
+                    periodName: "",
+                    periodNo: 0,
+                    tenantId: this.GLOBAL_User.detail.tenantId
                 },
                 formLabelWidth: '165px'
             }
         },
+        mounted(){
+           this.getList();
+        },
         methods:{
-            add(){ //新增
-               this.dialog.Visible = true
+            getList(){ //获取列表
+                const url = this.GLOBAL_Config.roomApi+'room/period?tenantId='+this.GLOBAL_User.detail.tenantId+'&pageNum='+this.pagination.currentPage+'&pageSize='+this.pagination.pageSize+'&searchText='+this.searchKeyword+'&orderBy=id%20asc';
+                Request('GET',url).then(function(res){
+                    //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
+//                    console.log(res);
+                    this.tableData = res.list;
+                    this.pagination = {
+                        currentPage: res.pageNum,
+                        pageSize:res.pageSize,
+                        total:res.total,
+                        startRow:res.startRow,
+                        endRow:res.endRow
+                    }
+//                    console.log(this.pagination);
+
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
             },
-            del(){ //删除
-                console.log(222);
+            openDialog(){
+                this.dialog.Visible = true
             },
             closeDialog(){
                 this.dialog.Visible = false
             },
+            add(){ //新增
+                const url = this.GLOBAL_Config.roomApi+'room/period';
+                Request('POST',url,this.form).then(function(res){
+                    console.log(res);
+                    this.dialog.Visible = false;
+                    if(res.code === 0){
+                        this.getList();
+                        this.form.periodName = '';
+                        this.form.periodNo = 0;
+                    }else {
+                        this.$message.error({
+                            showClose: true,
+                            message: '添加失败！',
+                            type: 'error'
+                        });
+                    }
 
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
+            },
+            del(){ //删除
+               if(this.multipleSelection.length !==0){
+                   const arr = [];
+                   for(var i of this.multipleSelection){
+                       console.log(i);
+                       arr.push(i.id);
+                   }
+                   const url = this.GLOBAL_Config.roomApi+'room/period?list='+ arr;
+                   Request('DELETE',url).then(function(res){
+                       console.log(res);
+                       if(res.code === 0){
+                           this.getList();
+                           this.multipleSelection = [];
+                       }else {
+                           this.$message.error({
+                               showClose: true,
+                               message: '删除失败！',
+                               type: 'error'
+                           });
+                       }
+
+                   }.bind(this)).catch(function(err){
+                       console.log(err)
+                   });
+               }else {
+                   this.$message.error({
+                       showClose: true,
+                       message: '请选择要删除的数据！',
+                       type: 'warning'
+                   });
+               }
+            },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
-                console.log(val);
+                console.log(this.multipleSelection);
             },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
+                this.pagination.pageSize = val;
+                this.getList();
             },
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
+                this.pagination.currentPage = val;
+                this.getList();
             }
         },
         components:{ pageHeader , myDialog}

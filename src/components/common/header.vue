@@ -2,21 +2,21 @@
     <div class="myHeader">
         <div class="left logo">
             <a href>
-                <img src="../../assets/logo.png" onerror="javascript:this.src='src/imgs/logo.png';"/>
+                <img :src="GLOBAL_Config.imgApi+'logo/logo.png'" onerror="javascript:this.src='./logo.png';"/>
                 <span>教室预约</span>
             </a>
         </div>
         <div class="right logout">
             <div class="left">
-                <el-dropdown>
+                <el-dropdown trigger="click"  @command="handleCommand">
                     <span class="el-dropdown-link" >
                         <i class="iconfont icon-user" style="font-size:18px;margin-right:5px"></i>
-                        admin
+                        {{username}}
                         <i class="el-icon-caret-bottom el-icon--right" style="font-size:14px;"></i>
                     </span>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>退出</el-dropdown-item>
-                        <el-dropdown-item>修改密码</el-dropdown-item>
+                    <el-dropdown-menu slot="dropdown" >
+                        <el-dropdown-item command="a">退出</el-dropdown-item>
+                        <el-dropdown-item command="b">修改密码</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
@@ -24,23 +24,54 @@
             <a style="cursor:pointer" @click="GoCloudAppMain()">我的主页 <i class="iconfont icon-exit"></i></a>
 
         </div>
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog" v-on:OK="exit">
+           <p>确定要退出么？</p>
+        </my-dialog>
     </div>
 </template>
 
 <script>
-    import commonConfig from '../../config/config';
+    import $localStorage from '../../config/localStorage';
+    import myDialog from '../common/myDialog.vue';
     export default {
         name : 'myHeader',
         data () {
             return {
+                username:null,
+                dialog:{
+                    Visible: false,
+                    title:'提示',
+                    size:'tiny'
+                },
             }
+        },
+        mounted(){
+           this.username = this.GLOBAL_User.username;
+//            console.log(this.username);
         },
         methods:{
             GoCloudAppMain:function(){
-//                this.$router.replace(commonConfig.cloudHomepage);
-                window.location.href= commonConfig.cloudHomepage;
+                window.location.href= this.GLOBAL_Config.cloudHomepage+'CloudUser/AppMain';
+            },
+            handleCommand(command){
+                switch(command){
+                    case 'a': this.openDialog();break
+                }
+            },
+            closeDialog(){
+                this.dialog.Visible = false
+            },
+            openDialog(){
+                this.dialog.Visible = true
+            },
+            exit(){
+                $localStorage.remove('cloud');
+                this.dialog.Visible = false;
+                window.location.href = this.GLOBAL_Config.tokenApi+'logout';
             }
-        }
+        },
+        components:{ myDialog }
+
     }
 </script>
 

@@ -7,8 +7,8 @@
             </div>
             <slot></slot>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="Close()">取 消</el-button>
-                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                <el-button @click="Close">取 消</el-button>
+                <el-button type="primary" @click="OK">确 定</el-button>
             </div>
         </el-dialog>
     </div>
@@ -35,6 +35,9 @@
         methods:{
             Close(){
                 this.$emit('closeDialog')
+            },
+            OK(){
+                this.$emit('OK')
             }
         },
         computed: {
