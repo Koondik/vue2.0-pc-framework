@@ -13,16 +13,21 @@
                     :showDel="pageHeader.delBtn"
                     :showImport="pageHeader.importBtn"
                     :showExport="pageHeader.exportBtn"
+                    :exportUrl="pageHeader.exportUrl"
+                    :importUrl="pageHeader.importUrl"
             ></page-header>
             <div class="search-wrap">
                 <el-date-picker
-                        v-model="filter.date"
+                        v-model="search.date"
                         type="daterange"
                         placeholder="选择日期范围"
-                        v-if="!isChart">
+                        :editable="false"
+                        v-if="!isChart"
+                        @change="getList"
+                >
                 </el-date-picker>
-                <el-input placeholder="查询" v-if="!isChart">
-                    <el-button slot="append" type="primary"   v-model="filter.keyword">查询</el-button>
+                <el-input placeholder="查询" v-if="!isChart" v-model="search.keyword">
+                    <el-button slot="append" type="primary" @click="getList">查询</el-button>
                 </el-input>
                 <el-button-group class="right">
                     <el-button :type="isChart?'primary':''" :plain="true" @click="changePage"><i class="iconfont icon-chart"></i></el-button>
@@ -30,7 +35,17 @@
                 </el-button-group>
             </div>
             <div class="tabs-wrap" v-show="!isChart">
-                <my-card ></my-card>
+                <my-card v-for="item in cardList"  :key="item" :badge="item.isApproval" :hasBtn="myCard.hasBtn" :label="item.id">
+                    <!--最好在v-for后加一个key绑定确保唯一性-->
+                    <template slot="Msg">
+                        <h4>{{item.roomName}}　<span>【{{item.scheduleDate}}　{{item.periodNames}}】</span></h4>
+                        <b>{{item.applyUserName}}　<i>{{item.inputDate |myDate}}</i></b>
+                        <div>
+                            <span>申请原因：</span>
+                            <p>{{item.applyRemark}}</p>
+                        </div>
+                    </template>
+                </my-card>
             </div>
             <div class="tabs-wrap" v-show="isChart">
                 <el-row style="margin-top: 30px;">
@@ -49,7 +64,7 @@
                         <el-card class="box-card">
                             <div slot="header" class="title">
                                 <span>教室类型统计图</span>
-                                <el-select v-model="chartSelect.value" placeholder="请选择" class="right">
+                                <el-select v-model="chartSelect.value" @change="getChartData" placeholder="请选择" class="right">
                                     <el-option
                                             v-for="item in chartSelect.options"
                                             :key="item.value"
@@ -75,6 +90,8 @@
     import pageHeader from '../../common/pageHeader.vue';
     import myDialog from '../../common/myDialog.vue';
     import myCard from  '../../common/myCard.vue';
+    import Request from '../../../config/Request';
+    import formatDate from '../../../config/date';
 
     let echarts = require('echarts/lib/echarts');
     require('echarts/lib/chart/bar');
@@ -90,34 +107,63 @@
                     name:'预约统计',
                     addBtn:false,
                     delBtn:false,
-                    importBtn:true,
-                    exportBtn:true
+                    importBtn:false,
+                    exportBtn:false
                 },
-                filter:{
+                myCard:{
+                    hasBtn:false,
+                },
+                search:{
                     keyword:'',
                     date:''
                 },
+                cardList:[], //预约信息列表
                 isChart:true,
                 chartSelect:{
-                    options: [{
-                        value: '选项1',
-                        label: '6月份'
-                    }, {
-                        value: '选项2',
-                        label: '7月份'
-                    }, {
-                        value: '选项3',
-                        label: '8月份'
-                    }, {
-                        value: '选项4',
-                        label: '8月份'
-                    }, {
-                        value: '选项5',
-                        label: '10月份'
-                    }],
-                    value: '选项1'
+                    options :
+                        [{
+                            value : '1',
+                            label : '1月份'
+                        },{
+                            value : '2',
+                            label : '2月份'
+                        },{
+                            value : '3',
+                            label : '3月份'
+                        },{
+                            value : '4',
+                            label : '4月份'
+                        },{
+                            value : '5',
+                            label : '5月份'
+                        },{
+                            value : '6',
+                            label : '6月份'
+                        }, {
+                            value : '7',
+                            label : '7月份'
+                        }, {
+                            value : '8',
+                            label : '8月份'
+                        }, {
+                            value : '9',
+                            label : '8月份'
+                        }, {
+                            value : '10',
+                            label : '10月份'
+                        },{
+                            value : '11',
+                            label : '11月份'
+                        },{
+                            value : '12',
+                            label : '12月份'
+                        }
+                    ],
+                    value: (new Date().getMonth()+1).toString()
                 },
 
+                lineData:{title:[],data:[]},
+                barData:{title:[],data:[]},
                 lineChart: null,
                 BarChart: null,
                 width:'',
@@ -125,20 +171,88 @@
             }
         },
         mounted() {
-            this.initChart();
-            // 设置容器高宽
-            this.resizeCharts();
+            //获取列表
+            this.getList();
+            this.getChartData();
             //窗口监听
             window.onresize = () => {
-                console.log(111);
                 this.lineChart.dispose();  //销毁图表
                 this.BarChart.dispose();  //销毁图表
-                this.initChart();
+                this.initBarChart();
+                this.initLineChart();
                 this.resizeCharts()
             }
-
         },
         methods:{
+            getList(){ //获取列表
+                console.log('搜索日期:'+this.search.date);
+                var fromDate = '';
+                var toDate = '';
+                if(this.search.date){
+                    if(this.search.date[0] !==null && this.search.date[0] !==null){
+                        fromDate = formatDate(new Date(this.search.date[0]), 'yyyy-MM-dd');
+                        toDate = formatDate(new Date(this.search.date[1]), 'yyyy-MM-dd');
+                    }else {
+                        fromDate = '';
+                        toDate = '';
+                    }
+                    console.log(fromDate,toDate);
+                }else {
+                    fromDate = '';
+                    toDate = '';
+                }
+                const url = this.GLOBAL_Config.roomApi+'room/roomapply?tenantId='+this.GLOBAL_User.detail.tenantId
+                    +'&sreachText='+this.search.keyword
+                    +'&fromDate='+ fromDate
+                    +'&toDate='+ toDate
+                    +'&pageNum=1&pageSize=1000000&isApproval=1,-1&orderBy=id%20asc';
+                Request('GET',url).then(function(res){
+                    //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
+                    console.log(res);
+                    this.cardList = res.list;
+                    this.total = res.total;
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
+            },
+            getChartData(){
+                if( this.lineChart || this.BarChart){
+                    this.lineChart.dispose();  //销毁图表
+                    this.BarChart.dispose();  //销毁图表
+                }
+                var url1 = this.GLOBAL_Config.roomApi+'room/roomapply/getRoomApplyStatyByRoom?tenantId='+this.GLOBAL_User.detail.tenantId+'&year='+new Date().getFullYear()+'&month='+this.chartSelect.value;
+                Request('GET',url1).then(function(res){
+                    //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
+                    console.log(res);
+                    this.barData={title:[],data:[]};
+
+                    for(var i in res){
+                        this.barData.title.push(i);
+                        this.barData.data.push(res[i]);
+                    }
+                    this.initBarChart();
+                    // 设置容器高宽
+                    this.resizeCharts();
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
+
+                var url2 = this.GLOBAL_Config.roomApi+'room/roomapply/getRoomApplyStatyByDate?tenantId='+this.GLOBAL_User.detail.tenantId+'&year='+new Date().getFullYear()+'&month='+this.chartSelect.value;
+                Request('GET',url2).then(function(res){
+                    //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
+                    console.log(res);
+                    this.lineData={title:[],data:[]};
+                    for(var i of res){
+                        this.lineData.title.push(i.key);
+                        this.lineData.data.push(i.value);
+                    }
+                    this.initLineChart();
+                    // 设置容器高宽
+                    this.resizeCharts();
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
+            },
             changePage(){
                 this.isChart = !this.isChart;
                 console.log(this.isChart);
@@ -149,75 +263,7 @@
                 this.width = chartBox.offsetWidth + 'px';
                 this.height = chartBox.offsetHeight + 'px'
             },
-            initChart() {
-                this.lineChart = echarts.init(this.$refs.myLine);
-                // 把配置和数据放这里
-                this.lineChart.setOption({
-                    color: ['#3398DB'],
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: { // 坐标轴指示器，坐标轴触发有效
-                            type: 'line' // 默认为直线，可选为：'line' | 'shadow'
-                        }
-                    },
-                    grid: {
-                        left: '5%',
-                        right: '10%',
-                        bottom: '0',
-                        containLabel: true
-                    },
-                    xAxis: [{
-                        name:'日期',
-                        type: 'category',
-                        data: ['06.15', '06.16', '06.17', '06.18', '06.19'],
-                        axisLine:{
-                            lineStyle:{
-                                color:'#3398DB'
-                            }
-                        },
-                        axisTick: {
-                            alignWithLabel: true
-                        },
-                        axisLabel:{
-                            textStyle:{
-                                color:'#000'
-                            }
-                        }
-
-                    }],
-                    yAxis: [{
-                        name:'使用次数',
-                        type: 'value',
-                        splitNumber:10,
-                        axisLine:{
-                            lineStyle:{
-                                color:'#3398DB'
-                            }
-                        },
-                        axisLabel:{
-                            textStyle:{
-                                color:'#000'
-                            }
-                        },
-                        splitLine:{
-                            lineStyle:{
-                                type:'dashed'
-                            }
-                        }
-                    }],
-                    series: [{
-                        name: '教室使用',
-                        type: 'line',
-                        symbol:'circle',
-                        label: {
-                            normal: {
-                                show: true,
-                                position: 'top'
-                            }
-                        },
-                        data: [30, 50, 10, 30, 20]
-                    }]
-                });
+            initBarChart() {
                 this.BarChart = echarts.init(this.$refs.myBar);
                 // 把配置和数据放这里
                 this.BarChart.setOption({
@@ -237,7 +283,8 @@
                     xAxis: [{
                         name:'教室类型',
                         type: 'category',
-                        data: ['普通教室', '阶梯教室', '电脑室'],
+                        data: this.barData.title,
+                           // ['普通教室', '阶梯教室', '电脑室'],
                         axisLine:{
                             lineStyle:{
                                 color:'#3398DB'
@@ -257,6 +304,7 @@
                         name:'使用次数',
                         type: 'value',
                         splitNumber:10,
+                        interval:1,  //间隔大小
                         axisLine:{
                             lineStyle:{
                                 color:'#3398DB'
@@ -283,9 +331,88 @@
                                 position: 'inside'
                             }
                         },
-                        data: [50, 80, 70 ]
+                        data: this.barData.data
+                            //[50, 80, 70 ]
                     }]
                 })
+            },
+            initLineChart(){
+                this.lineChart = echarts.init(this.$refs.myLine);
+                // 把配置和数据放这里
+                this.lineChart.setOption({
+                    color: ['#3398DB'],
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { // 坐标轴指示器，坐标轴触发有效
+                            type: 'line' // 默认为直线，可选为：'line' | 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '5%',
+                        right: '10%',
+                        bottom: '0',
+                        containLabel: true
+                    },
+                    xAxis: [{
+                        name:'日期',
+                        type: 'category',
+                        data: this.lineData.title,
+                        axisLine:{
+                            lineStyle:{
+                                color:'#3398DB'
+                            }
+                        },
+                        axisTick: {
+                            alignWithLabel: true
+                        },
+                        axisLabel:{
+                            textStyle:{
+                                color:'#000'
+                            }
+                        }
+
+                    }],
+                    yAxis: [{
+                        name:'使用次数',
+                        type: 'value',
+                        splitNumber:10,
+                        interval:1,  //间隔大小
+                        axisLine:{
+                            lineStyle:{
+                                color:'#3398DB'
+                            }
+                        },
+                        axisLabel:{
+                            textStyle:{
+                                color:'#000'
+                            }
+                        },
+                        splitLine:{
+                            lineStyle:{
+                                type:'dashed'
+                            }
+                        }
+                    }],
+                    series: [{
+                        name: '教室使用',
+                        type: 'line',
+                        symbol:'circle',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        data: this.lineData.data
+                    }]
+                });
+            }
+        },
+        watch:{
+            'search.keyword':function(key){
+                if(key ===''){
+                    this.getList();
+                }
             }
         },
         components:{ pageHeader , myCard }
@@ -307,15 +434,6 @@
         color:#999;
         line-height:61px;
         padding-left:24px;
-    }
-    .content-wrap{
-        margin: 17px 15px;
-        background-color: #fff;
-        min-height: 100%;
-        position: absolute;
-        right: 0;
-        left: 0;
-        padding:0 15px;
     }
     .search-wrap{
         padding:26px 0;

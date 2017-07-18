@@ -75,6 +75,32 @@ a:hover{text-decoration:none;}
     background-color: #fff!important;
     border-color: #f68a8a!important;
 }
+.el-button+.el-button {
+     margin-left: 0;
+}
+.normal-th{
+    line-height: 3.7;
+}
+.text-overflow-hidden{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    white-space: normal;
+    .cell{
+        line-height:20px;
+    }
+}
+.content-wrap{
+    margin: 17px 15px;
+    background-color: #fff;
+    min-height: 100%;
+    position: absolute;
+    right: 0;
+    left: 0;
+    padding: 0 15px 40px;
+}
 .table-wrap{
     .el-table {
         border: none;
@@ -124,27 +150,7 @@ a:hover{text-decoration:none;}
         }
     }
 }
-/*tabs导航样式*/
-.tabs-wrap{
-    width: 100%;
-    padding-top: 15px;
-    box-sizing: border-box;
-    .el-tabs__header{
-        position: absolute;
-        z-index:1000;
-        top: 0;
-        left:0;
-        border-bottom:none;
-        .el-tabs__nav-wrap{
-            line-height:64px;
-            margin-left:125px;
-            .el-tabs__item.is-active {
-                color: #666;
-                font-weight:bold;
-            }
-        }
-    }
-}
+
 /*选项卡样式*/
 .el-checkbox.card{
     position:relative;
@@ -167,6 +173,12 @@ a:hover{text-decoration:none;}
             h4{
                 font-size:16px;
                 font-weight:bold;
+                i{
+                    font-size:12px;
+                    color:#0a8cd2;
+                    cursor:pointer;
+
+                }
                 span{
                     color:#666;
                 }
@@ -230,6 +242,15 @@ a:hover{text-decoration:none;}
     background-color: #4e97d9;
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
+}
+/*预约审批样式*/
+.approve{
+    .el-checkbox.card{
+        cursor:default;
+    }
+    .el-checkbox__input{
+        display:none;
+    }
 }
 /*统计界面样式*/
 .statistic{

@@ -5,8 +5,16 @@
             <div class="right">
                 <el-button type="primary" icon="plus" v-if="showAdd" @click="add">新增</el-button>
                 <el-button type="danger" icon="delete" v-if="showDel" @click="del">删除</el-button>
-                <el-button type="primary" v-if="showImport"><i class="iconfont icon-in" ></i> 导入</el-button>
-                <el-button type="primary" v-if="showExport"><i class="iconfont icon-out"></i> 导出</el-button>
+                <el-upload
+                        style="display:inline-block;"
+                        v-if="showImport"
+                        :action="importUrl"
+                        :show-file-list="false"
+                        :on-success="uploadSuccess"
+                        :on-error="uploadError">
+                    <el-button type="primary" ><i class="iconfont icon-in" ></i> 导入</el-button>
+                </el-upload>
+                <el-button type="primary" v-if="showExport" @click="exportFile"><i class="iconfont icon-out"></i> 导出</el-button>
             </div>
         </div>
     </div>
@@ -19,13 +27,42 @@
             return {
             }
         },
-        props:['title','showAdd','showDel','showImport','showExport'],
+        props:['title','showAdd','showDel','showImport','showExport','importUrl','exportUrl'],
+
         methods:{
             add:function(){
                 this.$emit('add')
             },
             del:function(){
                 this.$emit('del')
+            },
+            exportFile(){ //导出文件
+                window.open(this.exportUrl)
+            },
+            uploadSuccess(response, file, fileList){
+                console.log(response, file, fileList);
+                if(response.code !==0){
+                    var tips = '';
+                    for(var i in response.data){
+                        tips = i+':'+response.data[i]+'　'+ tips
+                    }
+                    this.$message({
+                        showClose: true,
+                        duration:0,
+                        message: tips,
+                        type: 'error'
+                    });
+                }else {
+                    this.$message({
+                        message: '导入成功',
+                        type: 'success'
+                    });
+                    this.$emit('uploadSuccess')
+                }
+            },
+            uploadError(err, file, fileList){
+                console.log(err, file, fileList);
+
             }
         }
     }

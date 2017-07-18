@@ -1,16 +1,9 @@
 <template>
     <div class="myCard">
         <!--v-for="(item, index) in 10" :label="index"-->
-        <el-checkbox class="card" >
-            <div :class="{'badge-pass':a && !hasBtn,'badge-unpass':!a && !hasBtn}">
-                <h4>教室101　<span>【2017年6月20日　下午第5.6节】</span></h4>
-                <b>何大大　<i>2016年06月01日 13时48分26秒</i></b>
-                <div>
-                    <span>请假原因：</span>
-                    <p>假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假
-                        字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充假字填充</p>
-                </div>
-
+        <el-checkbox class="card" :label="label">
+            <div :class="{'badge-pass':badge==1 && !hasBtn,'badge-unpass':badge==-1 && !hasBtn}">
+                <slot name="Msg"></slot>
             </div>
             <div class="hasBtn" v-if="hasBtn">
                 <el-button type="success" @click="approve">同　意</el-button>
@@ -25,19 +18,20 @@
         name : 'myCard',
         data () {
             return {
-                a:true
+
             }
         },
         methods:{
             approve(){
                 console.log('同意');
+                this.$emit('approve')
             },
             unapprove(){
                 console.log('不同意');
                 this.$emit('unapprove')
             },
         },
-        props:['hasBtn']
+        props:['hasBtn','badge','label']
 
     }
 </script>

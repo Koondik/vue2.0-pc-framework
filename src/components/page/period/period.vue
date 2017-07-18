@@ -22,7 +22,7 @@
                 </el-input>
             </div>
             <div class="table-wrap">
-                <el-table :data="tableData" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
+                <el-table :data="tableData" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange" @row-dblclick="openDialog">
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="periodNo" label="排序" width="180"></el-table-column>
                     <el-table-column prop="periodName" label="节次"></el-table-column>
@@ -35,12 +35,12 @@
                 </div>
             </div>
         </div>
-        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog"  v-on:OK="add">
-            <el-form :model="form">
-                <el-form-item label="排序：" :label-width="formLabelWidth">
-                    <el-input v-model="form.periodNo" auto-complete="off"></el-input>
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog"  v-on:OK="check('Form')">
+            <el-form :model="form" :rules="rules" ref="Form" :label-width="formLabelWidth">
+                <el-form-item label="排序：" prop="periodNo">
+                    <el-input v-model.number="form.periodNo" auto-complete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="节次：" :label-width="formLabelWidth">
+                <el-form-item label="节次：" prop="periodName">
                     <el-input v-model="form.periodName" auto-complete="off"></el-input>
                 </el-form-item>
             </el-form>
@@ -60,8 +60,8 @@
                     name:'节次信息',
                     addBtn:true,
                     delBtn:true,
-                    importBtn:true,
-                    exportBtn:true
+                    importBtn:false,
+                    exportBtn:false
                 },
                 tableData: null,
                 multipleSelection: [],
@@ -78,24 +78,34 @@
                     title:'新增节次',
                     size:'tiny'
                 },
+                method:'POST',
                 form: {
                     id:0,
                     periodName: "",
                     periodNo: 0,
                     tenantId: this.GLOBAL_User.detail.tenantId
                 },
+                rules: {  //表单验证
+                    periodNo: [
+                        { required: true, message: '排序号不能为空'},
+                        { type:'number', message: '排序号必须为数字值'},
+                    ],
+                    periodName: [
+                        { required: true, message: '请输入节次'},
+                    ]
+                },
                 formLabelWidth: '165px'
             }
         },
         mounted(){
-           this.getList();
+            this.getList();
         },
         methods:{
             getList(){ //获取列表
                 const url = this.GLOBAL_Config.roomApi+'room/period?tenantId='+this.GLOBAL_User.detail.tenantId+'&pageNum='+this.pagination.currentPage+'&pageSize='+this.pagination.pageSize+'&searchText='+this.searchKeyword+'&orderBy=id%20asc';
                 Request('GET',url).then(function(res){
                     //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
-//                    console.log(res);
+                    console.log(res);
                     this.tableData = res.list;
                     this.pagination = {
                         currentPage: res.pageNum,
@@ -110,15 +120,31 @@
                     console.log(err)
                 });
             },
-            openDialog(){
+            openDialog(row){
+//                console.log(row);
+                if(row){this.form = row;this.method='PUT'}else{this.method='POST'}
                 this.dialog.Visible = true
             },
             closeDialog(){
                 this.dialog.Visible = false
             },
+            check(formName){
+                console.log(this.form);
+                console.log(formName);
+                this.$refs[formName].validate((valid) => {
+                    console.log(valid);
+                    if (valid) {
+                        this.add()
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
             add(){ //新增
-                const url = this.GLOBAL_Config.roomApi+'room/period';
-                Request('POST',url,this.form).then(function(res){
+                var url = this.GLOBAL_Config.roomApi+'room/period';
+                if(this.method === 'PUT'){ url +='/'+this.form.id }
+                Request(this.method,url,this.form).then(function(res){
                     console.log(res);
                     this.dialog.Visible = false;
                     if(res.code === 0){
@@ -184,6 +210,13 @@
                 this.getList();
             }
         },
+        watch:{
+            searchKeyword:function(key){
+                if(key ===''){
+                    this.getList();
+                }
+            }
+        },
         components:{ pageHeader , myDialog}
     }
 </script>
@@ -199,15 +232,6 @@
         color:#999;
         line-height:61px;
         padding-left:24px;
-    }
-    .content-wrap{
-        margin: 17px 15px;
-        background-color: #fff;
-        min-height: 100%;
-        position: absolute;
-        right: 0;
-        left: 0;
-        padding:0 15px;
     }
     .search-wrap{
         padding:26px 0;

@@ -8,7 +8,7 @@
         </div>
         <div class="content-wrap">
             <div class="count-wrap">
-                <p>共：<span>3</span> 条</p>
+                <p>共：<span>{{total}}</span> 条</p>
             </div>
             <page-header
                     :title="pageHeader.name"
@@ -17,24 +17,34 @@
                     :showImport="pageHeader.importBtn"
                     :showExport="pageHeader.exportBtn"
             ></page-header>
-            <div class="tabs-wrap">
-                <my-card :checkList="myCard.checkList" :hasBtn="myCard.hasBtn" v-on:unapprove="unapprove"></my-card>
+            <div class="nav-wrap">
+                <my-card v-for="item in cardList"  :key="item" :hasBtn="myCard.hasBtn" v-on:unapprove="unapprove(item)" v-on:approve="approve(item,true)" :label="item.id">
+                    <!--最好在v-for后加一个key绑定确保唯一性-->
+                    <template slot="Msg">
+                        <h4>{{item.roomName}}　<span>【{{item.scheduleDate}}　{{item.periodNames}}】</span></h4>
+                        <b>{{item.applyUserName}}　<i>{{item.inputDate |myDate}}</i></b>
+                        <div>
+                            <span>申请原因：</span>
+                            <p>{{item.applyRemark}}</p>
+                        </div>
+                    </template>
+                </my-card>
             </div>
         </div>
-        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog">
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog" v-on:OK="approve(unApproveData,false)">
             <el-form :inline="true" class="demo-form-inline">
-                <el-form-item label="申请人：" :label-width="formLabelWidth">何大大</el-form-item>
-                <el-form-item label="申请时间：" :label-width="formLabelWidth">2016-06-07</el-form-item>
+                <el-form-item label="申请人：" :label-width="formLabelWidth">{{msg.applyUserName}}</el-form-item>
+                <el-form-item label="申请时间：" :label-width="formLabelWidth">{{msg.inputDate}}</el-form-item>
             </el-form>
             <el-form :inline="true" class="demo-form-inline">
-                <el-form-item label="申请教室：" :label-width="formLabelWidth">何大大</el-form-item>
-                <el-form-item label="预约时间：" :label-width="formLabelWidth">2016-06-20 第5.6节</el-form-item>
+                <el-form-item label="申请教室：" :label-width="formLabelWidth">{{msg.roomName}}</el-form-item>
+                <el-form-item label="预约时间：" :label-width="formLabelWidth">{{msg.scheduleDate}} {{msg.periodNames}}</el-form-item>
             </el-form>
             <el-form :inline="true" class="demo-form-inline">
-                <el-form-item label="预约事由：" :label-width="formLabelWidth">教学交流</el-form-item>
+                <el-form-item label="预约事由：" :label-width="formLabelWidth">{{msg.applyRemark}}</el-form-item>
             </el-form>
             <el-form :model="form">
-                <el-form-item label="活动形式：" :label-width="formLabelWidth">
+                <el-form-item label="意见：" :label-width="formLabelWidth">
                     <el-input type="textarea" v-model="form.desc"></el-input>
                 </el-form-item>
             </el-form>
@@ -46,7 +56,10 @@
     import commonConfig from '../../../config/config';
     import pageHeader from '../../common/pageHeader.vue';
     import myDialog from '../../common/myDialog.vue';
-    import myCard from  '../../common/myCard.vue'
+    import myCard from  '../../common/myCard.vue';
+    import Request from '../../../config/Request';
+    import formatDate from '../../../config/date';
+
     export default {
         name : 'approve',
         data () {
@@ -60,29 +73,90 @@
                 },
                 myCard:{
                     hasBtn:true,
-
-                    checkList: ['复选框 A']
                 },
                 dialog:{
                     Visible: false,
                     title:'不同意意见',
                     size:'tiny'
                 },
+                msg:{
+                    applyUserName:'',
+                    inputDate:'',
+                    roomName:'',
+                    scheduleDate:'',
+                    periodNames:'',
+                    applyRemark:''
+                },
+                unApproveData:{},
                 form: {
                     desc:''
                 },
-                formLabelWidth: '165px'
+                formLabelWidth: '165px',
+                cardList:[], //预约信息列表
+                total:''
             }
         },
+        mounted(){
+            //获取列表
+            this.getList();
+        },
         methods:{
-            unapprove(){   //打开不同意编辑页面
+            getList(){ //获取列表
+                const url = this.GLOBAL_Config.roomApi+'room/roomapply?tenantId='+this.GLOBAL_User.detail.tenantId+'&pageNum=1&pageSize=1000000&isApproval=0&orderBy=id%20asc';
+                Request('GET',url).then(function(res){
+                    //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
+                    console.log(res);
+                    this.cardList = res.list;
+                    this.total = res.total;
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
+            },
+            approve(obj,key){ //同意
+                console.log(obj,key);
+                const url = this.GLOBAL_Config.roomApi+'room/roomapply/ApplyRoomApply?isSuccess='+key;
+                var data = {
+                    applyId: obj.id,
+                    approvalDate:formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+                    approvalUserId: this.GLOBAL_User.detail.id,
+                    id: 0,
+                    remark: key?'':this.form.desc,
+                    tenantId: this.GLOBAL_User.detail.tenantId
+                };
+                Request('POST',url,data).then(function(res){
+                    //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
+                    console.log(res);
+                    if(res.code === 0){
+                        this.$message({
+                            message: '审批成功',
+                            type: 'success'
+                        });
+                        if(!key){this.dialog.Visible = false}
+                        this.getList();
+                    }else{
+                        this.$message({
+                            message: '审批失败',
+                            type: 'error'
+                        });
+                    }
+                }.bind(this)).catch(function(err){
+                    console.log(err)
+                });
+            },
+            unapprove(obj){//打开不同意编辑页面
+                this.msg = {
+                    applyUserName:obj.applyUserName,
+                    inputDate:obj.inputDate,
+                    roomName:obj.roomName,
+                    scheduleDate:obj.scheduleDate,
+                    periodNames:obj.periodNames,
+                    applyRemark:obj.applyRemark
+                };
+                this.unApproveData = obj;
                 this.dialog.Visible = true
             },
             closeDialog(){
                 this.dialog.Visible = false
-            },
-            handleClick(tab, event) {  //tabs点击方法
-                console.log(tab, event);
             }
         },
         components:{ pageHeader , myDialog , myCard}
@@ -100,15 +174,6 @@
         color:#999;
         line-height:61px;
         padding-left:24px;
-    }
-    .content-wrap{
-        margin: 17px 15px;
-        background-color: #fff;
-        min-height: 100%;
-        position: absolute;
-        right: 0;
-        left: 0;
-        padding:0 15px;
     }
     .count-wrap{
         position:absolute;
