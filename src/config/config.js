@@ -3,8 +3,8 @@ const commonConfig = {
     client_secret:'123456',
     $webroot: 'http://192.168.0.185:8090/eureka-zuul/',
     tokenApi:'http://192.168.0.185:8090/oauth-server/',
-    imgApi:'http://192.168.0.185:8004/',
-    cloudHomepage:'http://192.168.0.101:85/cloud/#/',
+    imgApi:'http://192.168.0.185:85/images',
+    cloudHomepage:'http://192.168.0.185:85/cloud/#/',
     //演示地址
     // $webroot: 'http://yun.szlcsoft.com:8090/eureka-zuul/',
     // tokenApi:'http://yun.szlcsoft.com:8090/oauth-server/',

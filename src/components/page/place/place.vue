@@ -30,7 +30,7 @@
                     <el-table-column prop="roomNo" label="排序" width="80"></el-table-column>
                     <el-table-column prop="roomName" label="教室名称"></el-table-column>
                     <el-table-column prop="maxSeat" label="座位数"></el-table-column>
-                    <el-table-column prop="remark" label="备注" class-name="text-overflow-hidden"  label-class-name="normal-th"></el-table-column>
+                    <el-table-column prop="remark" label="备注" :show-overflow-tooltip="true"></el-table-column>
                 </el-table>
             </div>
             <div class="pagination-wrap clearfix">
@@ -40,7 +40,7 @@
                 </div>
             </div>
         </div>
-        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog"  v-on:OK="check('Form')">
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog('Form')"  v-on:OK="check('Form')">
             <el-form :model="form" :rules="rules" ref="Form" :label-width="formLabelWidth">
                 <el-form-item label="排序：" prop="roomNo">
                     <el-input v-model.number="form.roomNo" auto-complete="off"></el-input>
@@ -97,7 +97,7 @@
                     id:0,
                     roomNo: 0,
                     roomName: '',
-                    maxSeat:'',
+                    maxSeat:0,
                     remark:'',
                     tenantId: this.GLOBAL_User.detail.tenantId
                 },
@@ -107,7 +107,7 @@
                         { type:'number', message: '排序号必须为数字值'},
                     ],
                     roomName: [
-                        { required: true, message: '请输入教室名'},
+                        { required: true, message: '请输入教室名', trigger: 'blur' },
                     ],
                     remark: [
 //                        { required: true, message: '请输入备注信息', trigger: 'blur' }
@@ -124,11 +124,21 @@
             this.getList();
         },
         methods:{
+            resetForm(){   //重置表单对象信息
+                this.form = {
+                    id:0,
+                    roomNo: 0,
+                    roomName: '',
+                    maxSeat:0,
+                    remark:'',
+                    tenantId: this.GLOBAL_User.detail.tenantId
+                }
+            },
             getList(){ //获取列表
                 const url = this.GLOBAL_Config.roomApi+'room/room?pageNum='+this.pagination.currentPage+'&pageSize='+this.pagination.pageSize+'&searchText='+this.searchKeyword+'&orderBy=id%20asc';
                 Request('GET',url).then(function(res){
                     //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
-                    //                    console.log(res);
+                    //console.log(res);
                     this.tableData = res.list;
                     this.pagination = {
                         currentPage: res.pageNum,
@@ -137,7 +147,7 @@
                         startRow:res.startRow,
                         endRow:res.endRow
                     }
-                    //                    console.log(this.pagination);
+                    //console.log(this.pagination);
 
                 }.bind(this)).catch(function(err){
                     console.log(err)
@@ -149,7 +159,8 @@
                 this.dialog.Visible = true
             },
             closeDialog(){
-                this.dialog.Visible = false
+                this.dialog.Visible = false;
+                this.resetForm(); //重置提交数据
             },
             check(formName){
                 console.log(this.form);
@@ -157,14 +168,14 @@
                 this.$refs[formName].validate((valid) => {
                     console.log(valid);
                     if (valid) {
-                        this.add()
+                        this.add(formName)
                     } else {
                         console.log('error submit!!');
                         return false;
                     }
                 });
             },
-            add(){ //新增
+            add(formName){ //新增
                 var url = this.GLOBAL_Config.roomApi+'room/room';
                 if(this.method === 'PUT'){ url +='/'+this.form.id }
                 Request(this.method,url,this.form).then(function(res){
@@ -172,10 +183,10 @@
                     this.dialog.Visible = false;
                     if(res.code === 0){
                         this.getList();
-                        this.form.roomName = '';
-                        this.form.roomNo = 0;
-                        this.form.maxSeat='';
-                        this.form.remark=''
+                        if(formName){
+                            this.$refs[formName].resetFields(); //清空重置表单
+                        }
+                        this.resetForm(); //重置提交数据
                     }else {
                         this.$message.error({
                             showClose: true,

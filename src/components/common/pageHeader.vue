@@ -42,16 +42,14 @@
             uploadSuccess(response, file, fileList){
                 console.log(response, file, fileList);
                 if(response.code !==0){
-                    var tips = '';
-                    for(var i in response.data){
-                        tips = i+':'+response.data[i]+'　'+ tips
+                    for(var i=0;i<response.data.length;i++){
+                        this.$notify.error({
+                            title: response.data[i].key,
+                            message:response.data[i].value,
+                            duration: 0,
+                            offset:i*90
+                        });
                     }
-                    this.$message({
-                        showClose: true,
-                        duration:0,
-                        message: tips,
-                        type: 'error'
-                    });
                 }else {
                     this.$message({
                         message: '导入成功',

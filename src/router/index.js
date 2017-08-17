@@ -17,6 +17,7 @@ export default new Router({
             path : '/room', //在IIS发布需要指定项目根目录路由，否则404
             name : 'room',
             component : basis,
+            redirect: '/room/place',
             children:[
                 {
                     // 当 /user/:id/profile 匹配成功，
@@ -46,10 +47,10 @@ export default new Router({
                     component: statistic
                 }
 
-            ],
-            redirect: '/room/place'
+            ]
+
         },
-        { path: '*', redirect: '/room/place' }
+        { path: '*', redirect: '/room' }
 
 
     ],

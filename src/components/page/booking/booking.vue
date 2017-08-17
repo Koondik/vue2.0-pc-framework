@@ -163,6 +163,7 @@
                 console.log(this.navIndex);
                 switch(this.navIndex){
                     case '1':
+//                        isApproval = -2;
                         break;
                     case '2':
                         isApproval = 0;
@@ -180,11 +181,11 @@
                     console.log(res);
                     this.cardList = res.list;
                     this.pagination = {
-                        currentPage: res.pageNum!=0?res.pageNum:1,
-                        pageSize:res.pageSize,
-                        total:res.total,
-                        startRow:res.startRow,
-                        endRow:res.endRow
+                        currentPage: res.list?res.pageNum:1,
+                        pageSize:res.list?res.pageSize:10,
+                        total:res.list?res.total:0,
+                        startRow:res.list?res.startRow:0,
+                        endRow:res.list?res.endRow:0
                     }
                 }.bind(this)).catch(function(err){
                     console.log(err)
@@ -307,6 +308,13 @@
                 console.log(key, keyPath);
                 this.navIndex = key;
                 this.checkList = []; //清空数据
+                this.pagination = {
+                    currentPage: 1,
+                    pageSize:10,
+                    total:null,
+                    startRow:null,
+                    endRow:null
+                };
                 this.getList();
             },
             handleSizeChange(val) {

@@ -2,7 +2,7 @@ const resolve = require('path').resolve
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const url = require('url')
-const publicPath = ''
+const publicPath = './'
 
 module.exports = (options = {}) => ({
     entry : {
@@ -11,8 +11,8 @@ module.exports = (options = {}) => ({
     },
     output : {
         path : resolve(__dirname, 'dist'),
-        filename : options.dev ? '[name].js' : '[name].js?[chunkhash]',
-        chunkFilename : '[id].js?[chunkhash]',
+        filename : options.dev ? 'scripts/[name].js' : 'scripts/[name].js?[chunkhash]',
+        chunkFilename : 'scripts/resource/[id].js?[chunkhash]',
         publicPath : options.dev ? '/assets/' : publicPath
     },
     module : {
@@ -33,7 +33,7 @@ module.exports = (options = {}) => ({
                     }
                 }
             ]
-            },
+        },
             {
                 test : /\.js$/,
                 use : ['babel-loader'],
@@ -48,7 +48,6 @@ module.exports = (options = {}) => ({
                 use : [
                     'style-loader',
                     'css-loader',
-
                     'sass-loader'
                 ]
             },
@@ -57,7 +56,8 @@ module.exports = (options = {}) => ({
                 use : [{
                     loader : 'url-loader',
                     options : {
-                        limit : 10000
+                        limit : 10000,
+                        name:'images/[name].[hash:8].[ext]'
                     }
                 }]
             }
@@ -77,11 +77,11 @@ module.exports = (options = {}) => ({
         }
     },
     devServer : {
-        host : '192.168.0.101',
+        host : '127.0.0.1',
         port : 8010,
         proxy : {
             '/api/' : {
-                target : 'http://127.0.0.1:8080',
+                target : 'http://127.0.0.1:8010',
                 changeOrigin : true,
                 pathRewrite : {
                     '^/api' : ''

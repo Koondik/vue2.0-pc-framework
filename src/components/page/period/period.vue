@@ -35,7 +35,7 @@
                 </div>
             </div>
         </div>
-        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog"  v-on:OK="check('Form')">
+        <my-dialog :Visible="dialog.Visible" :title="dialog.title" :size="dialog.size" v-on:closeDialog="closeDialog('Form')"  v-on:OK="check('Form')">
             <el-form :model="form" :rules="rules" ref="Form" :label-width="formLabelWidth">
                 <el-form-item label="排序：" prop="periodNo">
                     <el-input v-model.number="form.periodNo" auto-complete="off"></el-input>
@@ -91,7 +91,7 @@
                         { type:'number', message: '排序号必须为数字值'},
                     ],
                     periodName: [
-                        { required: true, message: '请输入节次'},
+                        { required: true, message: '请输入节次', trigger: 'blur' },
                     ]
                 },
                 formLabelWidth: '165px'
@@ -101,6 +101,14 @@
             this.getList();
         },
         methods:{
+            resetForm(){   //重置表单对象信息
+                this.form = {
+                    id:0,
+                    periodName: "",
+                    periodNo: 0,
+                    tenantId: this.GLOBAL_User.detail.tenantId
+                }
+            },
             getList(){ //获取列表
                 const url = this.GLOBAL_Config.roomApi+'room/period?tenantId='+this.GLOBAL_User.detail.tenantId+'&pageNum='+this.pagination.currentPage+'&pageSize='+this.pagination.pageSize+'&searchText='+this.searchKeyword+'&orderBy=id%20asc';
                 Request('GET',url).then(function(res){
@@ -126,7 +134,8 @@
                 this.dialog.Visible = true
             },
             closeDialog(){
-                this.dialog.Visible = false
+                this.dialog.Visible = false ;
+                this.resetForm(); //重置提交数据
             },
             check(formName){
                 console.log(this.form);
@@ -134,14 +143,14 @@
                 this.$refs[formName].validate((valid) => {
                     console.log(valid);
                     if (valid) {
-                        this.add()
+                        this.add(formName)
                     } else {
                         console.log('error submit!!');
                         return false;
                     }
                 });
             },
-            add(){ //新增
+            add(formName){ //新增
                 var url = this.GLOBAL_Config.roomApi+'room/period';
                 if(this.method === 'PUT'){ url +='/'+this.form.id }
                 Request(this.method,url,this.form).then(function(res){
@@ -149,8 +158,10 @@
                     this.dialog.Visible = false;
                     if(res.code === 0){
                         this.getList();
-                        this.form.periodName = '';
-                        this.form.periodNo = 0;
+                        if(formName){
+                            this.$refs[formName].resetFields(); //清空重置表单
+                        }
+                        this.resetForm(); //重置提交数据
                     }else {
                         this.$message.error({
                             showClose: true,

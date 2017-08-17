@@ -46,6 +46,12 @@
                         </div>
                     </template>
                 </my-card>
+                <div class="pagination-wrap clearfix" style="margin-bottom:20px">
+                    <div class="left">*显示第{{pagination.startRow}}条到第{{pagination.endRow}}条数据</div>
+                    <div class="right">
+                        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :page-sizes="[5, 10, 15, 20]" layout="total, sizes, prev, pager, next, jumper" :current-page="pagination.currentPage"  :page-size="pagination.pageSize"  :total="pagination.total"></el-pagination>
+                    </div>
+                </div>
             </div>
             <div class="tabs-wrap" v-show="isChart">
                 <el-row style="margin-top: 30px;">
@@ -113,6 +119,13 @@
                 myCard:{
                     hasBtn:false,
                 },
+                pagination:{
+                    currentPage: 1,
+                    pageSize:10,
+                    total:null,
+                    startRow:null,
+                    endRow:null
+                },
                 search:{
                     keyword:'',
                     date:''
@@ -175,14 +188,18 @@
             this.getList();
             this.getChartData();
             //窗口监听
-            window.onresize = () => {
-                this.lineChart.dispose();  //销毁图表
-                this.BarChart.dispose();  //销毁图表
-                this.initBarChart();
-                this.initLineChart();
-                this.resizeCharts()
-            }
+//            window.onresize = () => {
+//                this.lineChart.dispose();  //销毁图表
+//                this.BarChart.dispose();  //销毁图表
+//                this.initBarChart();
+//                this.initLineChart();
+//                this.resizeCharts()
+//            }
         },
+//        destroyed(){
+//            this.lineChart.dispose();  //销毁图表
+//            this.BarChart.dispose();  //销毁图表
+//        },
         methods:{
             getList(){ //获取列表
                 console.log('搜索日期:'+this.search.date);
@@ -205,15 +222,32 @@
                     +'&sreachText='+this.search.keyword
                     +'&fromDate='+ fromDate
                     +'&toDate='+ toDate
-                    +'&pageNum=1&pageSize=1000000&isApproval=1,-1&orderBy=id%20asc';
+                    +'&pageNum='+this.pagination.currentPage+'&pageSize='+this.pagination.pageSize+'&isApproval=1,-1&orderBy=id%20asc';
                 Request('GET',url).then(function(res){
                     //这两个回调函数都有各自独立的作用域，如果直接在里面访问 this，无法访问到 Vue 实例,只要添加一个 .bind(this) 就能解决这个问题
                     console.log(res);
                     this.cardList = res.list;
-                    this.total = res.total;
+                    this.total = res.list?res.total:0;
+                    this.pagination = {
+                        currentPage: res.list?res.pageNum:1,
+                        pageSize:res.list?res.pageSize:10,
+                        total:res.list?res.total:0,
+                        startRow:res.list?res.startRow:0,
+                        endRow:res.list?res.endRow:0
+                    }
                 }.bind(this)).catch(function(err){
                     console.log(err)
                 });
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                this.pagination.pageSize = val;
+                this.getList();
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                this.pagination.currentPage = val;
+                this.getList();
             },
             getChartData(){
                 if( this.lineChart || this.BarChart){
