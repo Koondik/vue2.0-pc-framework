@@ -2,7 +2,7 @@
     <div class="myHeader">
         <div class="left logo">
             <a href>
-                <img :src="GLOBAL_Config.imgApi+'logo/logo.png'" onerror="javascript:this.src='./logo.png';"/>
+                <img :src="logoUrl" ref="img"/>
                 <span>教室预约</span>
             </a>
         </div>
@@ -33,10 +33,12 @@
 <script>
     import $localStorage from '../../config/localStorage';
     import myDialog from '../common/myDialog.vue';
+    import logo from '../../assets/logo.png';
     export default {
         name : 'myHeader',
         data () {
             return {
+                logoUrl:this.GLOBAL_Config.imgApi+'logo/logo.png',
                 username:null,
                 dialog:{
                     Visible: false,
@@ -48,6 +50,10 @@
         mounted(){
            this.username = this.GLOBAL_User.username;
 //            console.log(this.username);
+            this.$refs.img.onerror = () => {
+                //图片加载失败使用默认图片
+                this.logoUrl = logo;
+            }
         },
         methods:{
             GoCloudAppMain:function(){

@@ -1,13 +1,13 @@
+require("babel-polyfill"); //兼容IE浏览器（IE不兼容Promise）
 const resolve = require('path').resolve
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const url = require('url')
 const publicPath = './'
-
 module.exports = (options = {}) => ({
     entry : {
         vendor : './src/vendor',
-        index : './src/main.js'
+        index : ["babel-polyfill",'./src/main.js']
     },
     output : {
         path : resolve(__dirname, 'dist'),

@@ -75,9 +75,9 @@
                         width:100%;
                         height:100%;
                         border-right:3px solid transparent;
-                        color:#bbb;
+                        color:#333;
                         cursor:pointer;
-                        font-size:14px;
+                        font-size:13px;
                         i{
                             font-size:26px;
                             vertical-align:-4px;

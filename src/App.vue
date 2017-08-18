@@ -22,8 +22,9 @@ html,body,ul,h1,h2,h3,h4,h5{
     margin:0;
     padding:0;
 }
-body {
-    font-family: "Arial","Microsoft YaHei","黑体","宋体",sans-serif;
+html,body {
+    font-family: "Arial","Microsoft YaHei",黑体,宋体,sans-serif;
+    font-size: 13px;
 }
 table{border-collapse:collapse;border-spacing:0;}
 li{list-style:none;}
